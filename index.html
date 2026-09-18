@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+<meta name="description" content="Bingo Minecraft: cartones aleatorios, líneas y blackout con temporizador.">
+<title>Bingo Minecraft — Discohikorybrs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04060d;--panel:rgba(15,20,35,.55);--line:rgba(139,92,246,.2);--text:#f5f7ff;--muted:#9da8c5;--a:#8b5cf6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
+.bg-grid{position:fixed;inset:0;z-index:-2;opacity:.14;background-image:linear-gradient(#293354 1px,transparent 1px),linear-gradient(90deg,#293354 1px,transparent 1px);background-size:44px 44px}
+header{max-width:900px;margin:auto;padding:20px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50;background:rgba(4,6,13,.8);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{font:700 16px 'Space Grotesk';color:#fff;text-decoration:none}
+.back{color:#b39aff;text-decoration:none;font-size:13px;border:1px solid var(--line);padding:8px 14px;border-radius:8px}
+main{max-width:900px;margin:auto;padding:24px}
+.hero-t{text-align:center;padding:24px 0 6px}
+.hero-t h1{font:700 clamp(28px,4.5vw,44px) 'Space Grotesk';margin:10px 0;background:linear-gradient(90deg,#fff 25%,#fda4af);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{color:#fda4af;font-size:10px;font-family:'Press Start 2P',monospace;letter-spacing:2px}
+.lead{color:var(--muted);max-width:620px;margin:0 auto}
+.glass{background:var(--panel);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:15px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.card{padding:22px;margin:18px 0}
+.hud{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;font-size:14px;color:var(--muted);margin:10px 0}
+.hud b{color:#fff}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.cell{border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);min-height:88px;display:grid;place-items:center;text-align:center;font-size:12px;padding:8px;cursor:pointer;transition:all .2s;user-select:none}
+.cell:hover{border-color:#fda4af}
+.cell.marked{background:rgba(52,211,153,.14);border-color:#34d399;text-decoration:line-through}
+.cell.win{background:rgba(251,191,36,.18);border-color:#fbbf24;animation:winPulse 1s ease-in-out infinite}
+.cell.free{background:rgba(139,92,246,.15);border-color:var(--a);font-size:22px}
+@keyframes winPulse{50%{box-shadow:0 0 22px rgba(251,191,36,.6)}}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center}
+.btn{padding:11px 20px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:rgba(255,255,255,.04);cursor:pointer}
+.primary{background:linear-gradient(#fb7185,#be123c);border:2px solid #141414;border-radius:4px}
+h2.st{font:700 20px 'Space Grotesk';margin:0 0 4px}
+.muted{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#winMsg{display:none;text-align:center;font:700 26px 'Space Grotesk';color:#fcd34d;margin:10px 0;text-shadow:0 0 24px rgba(251,191,36,.5)}
+footer{text-align:center;padding:34px 20px;color:var(--muted);font-size:12px;border-top:1px solid rgba(255,255,255,.06);margin-top:30px}
+footer strong{color:#fff}
+.visits{margin-top:10px;font-size:13px;color:var(--muted)}
+@media(max-width:640px){.cell{min-height:70px;font-size:10px}.grid2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.cell.win{animation:none !important}}
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<header>
+  <a class="back" href="https://discohikory.github.io/Portafolio/">← Portafolio</a>
+  <a class="brand" href="#">🎯 Bingo Minecraft</a>
+</header>
+<main>
+  <div class="hero-t">
+    <p class="eyebrow">CARTONES · LÍNEAS · BLACKOUT</p>
+    <h1>Bingo Minecraft</h1>
+    <p class="lead">Cartón aleatorio de 25 retos. Márcalos al completarlos en tu mundo: línea o ¡cartón lleno!</p>
+  </div>
+  <div class="card glass">
+    <div class="hud"><span>⏱ <b id="tTime">0:00</b></span><span>✅ <b id="tCount">0/25</b></span><span>🏆 Victorias: <b id="tWins">0</b></span></div>
+    <div id="winMsg">¡BINGO! 🎉</div>
+    <div class="board" id="board"></div>
+    <div class="rowbtns"><button type="button" class="btn primary" id="newCard">Nuevo cartón 🎲</button><button type="button" class="btn" id="resetMarks">Limpiar marcas</button></div>
+  </div>
+</main>
+<section style="max-width:900px;margin:6px auto 0;padding:0 24px">
+  <div class="card glass">
+    <h2 class="st">🚀 Mis proyectos</h2>
+    <div class="grid2" id="projLinks"></div>
+  </div>
+</section>
+<footer>© 2026 Daniel Esteban Vera Fernandez · <strong>Discohikorybrs</strong> · Todos los derechos reservados.<br><small>Juega en tu mundo y marca aquí. Hecho con ⛏️</small><div class="visits">👁 <span id="visitCount">…</span> visitas</div></footer>
+<script>
+const PROJS=[["Portfolio principal","https://discohikory.github.io/Portafolio/"],["Staff Toolkit","https://discohikory.github.io/Staff-Toolkit/"],["Wiki de Comandos","https://discohikory.github.io/Wiki-Comandos/"],["Quiz Staff","https://discohikory.github.io/Quiz-Staff/"],["Status en vivo","https://discohikory.github.io/Server-Status/"],["Guía de Encantamientos","https://discohikory.github.io/Guia-Encantamientos/"],["Crónicas del Staff","https://discohikory.github.io/Cronicas/"],["Centro de comunidad","https://discohikory.github.io/Comunidad/"],["PlayerCards","https://discohikory.github.io/PlayerCards/"],["Radio Gamer","https://discohikory.github.io/Radio-Gamer/"],["Starter Pack","https://discohikory.github.io/Starter-Pack/"],["Aldeano IA","https://discohikory.github.io/Aldeano-IA/"],["Disco AI","https://discohikory.github.io/Disco-AI/"]];
+document.getElementById('projLinks').innerHTML=PROJS.map(p=>`<div><h3 style="margin:6px 0">${p[0]}</h3><div class="rowbtns"><a class="btn" href="${p[1]}">Abrir ↗</a></div></div>`).join('');
+const TASKS=["Mata 5 zombis","Consigue 1 diamante","Doma un caballo","Pesca 3 peces","Haz 3 panes","Encuentra una aldea","Doma un lobo","Consigue obsidiana","Fabrica un arco","Mata un creeper","Reúne 64 de roble","Fabrica una cama","Consigue 10 de hierro","Fabrica un balde","Nada 100 bloques","Fabrica una brújula","Consigue lana","Fabrica tijeras","Planta 20 cultivos","Fabrica un horno","Consigue pólvora","Mata un esqueleto","Fabrica 16 flechas","Encuentra carbón","Fabrica 32 antorchas","Monta un cerdo","Fabrica un mapa","Encanta un item","Prepara una poción","Consigue oro","Mata una araña","Fabrica una caña","Encuentra esmeralda","Encuentra una montura","Cocina 10 filetes","Funde vidrio"];
+const store={get:(k,f)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let card=store.get('bingo_card',null),marks=store.get('bingo_marks',[]),t0=store.get('bingo_t0',null),won=false,tick=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
+function newCard(){
+  card=shuffle([...TASKS]).slice(0,24);
+  card.splice(12,0,"⭐ GRATIS");
+  marks=[12];t0=Date.now();won=false;
+  save();paint();startTick();
+  document.getElementById('winMsg').style.display='none';
+}
+function save(){store.set('bingo_card',card);store.set('bingo_marks',marks);store.set('bingo_t0',t0)}
+function paint(){
+  const b=document.getElementById('board');
+  b.innerHTML=card.map((t,i)=>`<div class="cell${i===12?" free":""}${marks.includes(i)?" marked":""}" data-c="${i}">${i===12?"⭐":t}</div>`).join('');
+  document.getElementById('tCount').textContent=marks.length+'/25';
+  document.getElementById('tWins').textContent=store.get('bingo_wins',0);
+}
+function lines(){
+  const L=[];
+  for(let r=0;r<5;r++)L.push([0,1,2,3,4].map(c=>r*5+c));
+  for(let c=0;c<5;c++)L.push([0,1,2,3,4].map(r=>r*5+c));
+  L.push([0,6,12,18,24],[4,8,12,16,20]);
+  return L;
+}
+function checkWin(){
+  const wins=lines().filter(l=>l.every(i=>marks.includes(i)));
+  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('win'));
+  if(wins.length&&!won){
+    won=true;clearInterval(tick);
+    wins.flat().forEach(i=>document.querySelector(`[data-c="${i}"]`).classList.add('win'));
+    const all=marks.length===25;
+    document.getElementById('winMsg').style.display='block';
+    document.getElementById('winMsg').textContent=all?'¡BLACKOUT! 🏆 Cartón lleno':'¡BINGO! 🎉';
+    store.set('bingo_wins',store.get('bingo_wins',0)+1);
+    document.getElementById('tWins').textContent=store.get('bingo_wins',0);
+  }
+}
+document.getElementById('board').addEventListener('click',e=>{
+  const c=e.target.closest?e.target.closest('[data-c]'):null;
+  if(!c||won)return;
+  const i=Number(c.dataset.c);
+  if(i===12)return;
+  if(marks.includes(i))marks=marks.filter(x=>x!==i);
+  else{marks.push(i);if(!t0){t0=Date.now();startTick()}}
+  save();paint();checkWin();
+});
+document.getElementById('newCard').addEventListener('click',newCard);
+document.getElementById('resetMarks').addEventListener('click',()=>{marks=[12];won=false;document.getElementById('winMsg').style.display='none';save();paint()});
+function fmt(ms){const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function startTick(){
+  clearInterval(tick);
+  tick=setInterval(()=>{
+    if(!t0||won){document.getElementById('tTime').textContent=t0?fmt(Date.now()-t0):'0:00';if(won)clearInterval(tick);return}
+    document.getElementById('tTime').textContent=fmt(Date.now()-t0);
+  },1000);
+}
+if(!card||card.length!==25)newCard();else{paint();checkWin();if(!won&&marks.length>1)startTick()}
+(function(){
+  var el=document.getElementById('visitCount');
+  if(!el)return;
+  function fmtN(n){n=Number(n)||0;return n>=1000?(n/1000).toFixed(1).replace('.',',').replace(',0','')+' mil':String(n)}
+  fetch('https://api.jsonbin.io/v3/b/6aac6a86ffd5d1605313c161/latest',{headers:{'X-Access-Key':'$2a$10$XbVd43wzBhlIfE1632782ePKNz5e/MaX25U3NJ5JRIBKtJt0ILnXC'}})
+  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+    var v=(j.record&&j.record.visits)||{};
+    v.bingo=(v.bingo||0)+1;
+    el.textContent=fmtN(v.bingo);
+    fetch('https://api.jsonbin.io/v3/b/6aac6a86ffd5d1605313c161',{method:'PUT',headers:{'Content-Type':'application/json','X-Access-Key':'$2a$10$XbVd43wzBhlIfE1632782ePKNz5e/MaX25U3NJ5JRIBKtJt0ILnXC','X-Bin-Versioning':'false'},body:JSON.stringify({visits:v})}).catch(function(){});
+  }).catch(function(){el.textContent='—'});
+})();
+</script>
+</body>
+</html>
